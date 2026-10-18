@@ -1,10 +1,10 @@
 import { useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import { useLoginUser } from '../hooks/useAuth'
 import { getErrorMessage } from '../utilis/format'
 import welcomeImg from '../images/welcome2.jpg'
-
+import { useToast } from '../hooks/useToast'
 // Illustration lives in the Vite/CRA "public" folder -> public/login-illustration.png
 const ILLUSTRATION_SRC = 'src\images\welcome.png'
 
@@ -32,24 +32,24 @@ const inputClasses =
     'placeholder:text-gray-400 transition focus:outline-none focus:border-[#5B67F8] focus:ring-2 focus:ring-[#5B67F8]/30'
 
 const Login = () => {
-    const location = useLocation()
+    const toast = useToast()
     const [form, setForm] = useState({ email: '', password: '' })
     // UI-only state for the eye icon; password stays hidden by default
     const [showPassword, setShowPassword] = useState(false)
 
-    const { mutate, isPending, isError, error } = useLoginUser()
-
-    const successMessage = location.state?.message
+    const { mutate, isPending } = useLoginUser()
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value })
     }
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        mutate(form)
-        // success aana token Redux-la set aagum, PublicRoute automatic-ah role-ku match page-ku redirect pannum
-    }
+ const handleSubmit = (e) => {
+    e.preventDefault()
+    mutate(form, {
+        onSuccess: (data) => toast.success(`Welcome back, ${data.user.name}!`),
+        onError: (err) => toast.error(getErrorMessage(err))
+    })
+}
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-[#F1F1F1] px-4 py-8 font-sans">
@@ -104,18 +104,6 @@ const Login = () => {
                         <p className="mt-1 text-center text-xs text-gray-500">Please Login to your account</p>
 
                         <div className="mt-6">
-                            {successMessage && (
-                                <p className="mb-4 break-words rounded-lg bg-green-50 p-3 text-sm text-green-700">
-                                    {successMessage}
-                                </p>
-                            )}
-
-                            {isError && (
-                                <p className="mb-4 break-words rounded-lg bg-red-50 p-3 text-sm text-red-700">
-                                    {getErrorMessage(error)}
-                                </p>
-                            )}
-
                             <label htmlFor="email" className="sr-only">
                                 Email
                             </label>

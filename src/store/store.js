@@ -1,10 +1,19 @@
 import { configureStore } from '@reduxjs/toolkit'
 import authReducer from './authSlice'
 import toastReducer from './toastSlice'
+import confirmReducer from './confirmSlice'
 
 export const store = configureStore({
     reducer: {
         auth: authReducer,
-        toast: toastReducer
-    }
+        toast: toastReducer,
+        confirm: confirmReducer
+    },
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware({
+            serializableCheck: {
+                ignoredActions: ['confirm/openConfirm'],
+                ignoredPaths: ['confirm.onConfirm']
+            }
+        })
 })

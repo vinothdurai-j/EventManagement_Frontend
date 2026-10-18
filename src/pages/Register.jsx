@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useRegisterUser } from '../hooks/useAuth'
+import { useToast } from '../hooks/useToast'
 import { getErrorMessage } from '../utilis/format'
 import welcomeImg from '../images/welcome5.png'
 
 
 const Register = () => {
     const navigate = useNavigate()
+    const toast = useToast()
 
     const [form, setForm] = useState({
         name: '',
@@ -15,9 +17,8 @@ const Register = () => {
         password: '',
         confirmPassword: ''
     })
-    const [formError, setFormError] = useState('')
 
-    const { mutate, isPending, isError, error } = useRegisterUser()
+    const { mutate, isPending } = useRegisterUser()
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value })
@@ -25,10 +26,9 @@ const Register = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        setFormError('')
 
         if (form.password !== form.confirmPassword) {
-            return setFormError('Password and Confirm Password do not match')
+            return toast.error('Password and Confirm Password do not match')
         }
 
         // confirmPassword backend-ku anuppa venam
@@ -36,15 +36,12 @@ const Register = () => {
 
         mutate(payload, {
             onSuccess: () => {
-                navigate('/login', {
-                    replace: true,
-                    state: { message: 'Registered successfully. Please login.' }
-                })
-            }
+                toast.success('Registered successfully. Please login.')
+                navigate('/login', { replace: true })
+            },
+            onError: (err) => toast.error(getErrorMessage(err))
         })
     }
-
-    const errorMessage = formError || (isError && getErrorMessage(error))
 
     const inputClass = 'w-full mb-4 px-3 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500'
 
@@ -62,10 +59,6 @@ const Register = () => {
     <div className="relative z-10 p-8">
                 
                 <h1 className="text-2xl font-bold text-center mb-6">Register</h1>
-
-                {errorMessage && (
-                    <p className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm">{errorMessage}</p>
-                )}
 
                 <label className="block mb-1 text-sm font-medium">Name</label>
                 <input type="text" name="name" value={form.name} onChange={handleChange} required className={inputClass} />

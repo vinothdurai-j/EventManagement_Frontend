@@ -3,10 +3,12 @@ import { useSelector } from 'react-redux'
 import { MapPin, CalendarDays, Users } from 'lucide-react'
 import { useEvent } from '../hooks/useEvents'
 import { useMyRegistrations, useRegisterForEvent } from '../hooks/useRegistrations'
+import { useToast } from '../hooks/useToast'
 import { formatDate, getErrorMessage } from '../utilis/format'
 
 const EventDetails = () => {
     const { id } = useParams()
+    const toast = useToast()
     const { user } = useSelector((state) => state.auth)
     const isUser = user?.role === 'user'
 
@@ -15,6 +17,13 @@ const EventDetails = () => {
     // user mattum: already register pannitaana nu paaka
     const { data: myRegistrations } = useMyRegistrations(isUser)
     const registerMutation = useRegisterForEvent()
+
+    const handleRegister = () => {
+        registerMutation.mutate(event._id, {
+            onSuccess: () => toast.success('Registered successfully!'),
+            onError: (err) => toast.error(getErrorMessage(err))
+        })
+    }
 
     if (isPending) {
         return (
@@ -103,21 +112,9 @@ const EventDetails = () => {
                         </p>
                     </div>
 
-                    {registerMutation.isError && (
-                        <p className="mt-5 p-3 rounded-lg bg-red-100 text-red-700 text-sm">
-                            {getErrorMessage(registerMutation.error)}
-                        </p>
-                    )}
-
-                    {registerMutation.isSuccess && (
-                        <p className="mt-5 p-3 rounded-lg bg-green-100 text-green-700 text-sm">
-                            Registered successfully!
-                        </p>
-                    )}
-
                     {isUser && (
                         <button
-                            onClick={() => registerMutation.mutate(event._id)}
+                            onClick={handleRegister}
                             disabled={!canRegister || registerMutation.isPending}
                             className="mt-6 w-full py-2.5 text-sm font-medium bg-indigo-600 text-white rounded-xl shadow-sm hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                         >

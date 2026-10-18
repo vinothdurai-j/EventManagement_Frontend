@@ -18,7 +18,7 @@ import AdminRegistrations from './pages/AdminRegistrations'
 
 
 import ToastContainer from './components/ToastContainer'
-
+import ConfirmDialog from './components/ConfirmDialog'
 // Already login panna user login/register page-ku poga koodadhu
 const PublicRoute = ({ children }) => {
     const { token, user } = useSelector((state) => state.auth)
@@ -35,6 +35,7 @@ const App = () => {
         <>
             <Navbar />
  <ToastContainer />
+  <ConfirmDialog />
             <Routes>
                 {/* Public */}
                 <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />

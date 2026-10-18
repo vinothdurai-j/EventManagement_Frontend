@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import { FiEye, FiEdit2, FiTrash2 } from 'react-icons/fi'
 import { useAdminEvents, useUpdateEventStatus, useDeleteEvent } from '../hooks/useEvents'
+import { useToast } from '../hooks/useToast'
 import { formatDate, getErrorMessage } from '../utilis/format'
-
+import { useConfirm } from '../hooks/useConfirm'
 const AdminDashboard = () => {
+    const toast = useToast()
     const { data: events, isPending, isError, error } = useAdminEvents()
     const statusMutation = useUpdateEventStatus()
     const deleteMutation = useDeleteEvent()
@@ -13,23 +15,46 @@ const AdminDashboard = () => {
     const realError = isError && !isEmpty
 
     const handleToggle = (event) => {
-        statusMutation.mutate({
-            id: event._id,
-            status: event.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
-        })
-    }
+        const nextStatus = event.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'
 
+        statusMutation.mutate(
+            {
+                id: event._id,
+                status: nextStatus
+            },
+            {
+                onSuccess: () =>
+                    toast.success(
+                        nextStatus === 'ACTIVE'
+                            ? 'Event activated successfully'
+                            : 'Event deactivated successfully'
+                    ),
+                onError: (err) => toast.error(getErrorMessage(err))
+            }
+        )
+    }
+const confirm = useConfirm()
+
+    // const handleDelete = (event) => {
+    //     if (window.confirm(`Delete "${event.name}"? This cannot be undone.`)) {
+    //         deleteMutation.mutate(event._id, {
+    //             onSuccess: () => toast.success('Event deleted successfully'),
+    //             onError: (err) => toast.error(getErrorMessage(err))
+    //         })
+    //     }
+    // }
     const handleDelete = (event) => {
-        if (window.confirm(`Delete "${event.name}"? This cannot be undone.`)) {
-            deleteMutation.mutate(event._id)
-        }
-    }
-
-    const actionError = statusMutation.isError
-        ? getErrorMessage(statusMutation.error)
-        : deleteMutation.isError
-            ? getErrorMessage(deleteMutation.error)
-            : null
+    confirm({
+        title: 'Delete Event',
+        message: `Delete "${event.name}"? This cannot be undone.`,
+        confirmText: 'Delete',
+        onConfirm: () =>
+            deleteMutation.mutate(event._id, {
+                onSuccess: () => toast.success('Event deleted successfully'),
+                onError: (err) => toast.error(getErrorMessage(err))
+            })
+    })
+}
 
     return (
         <div className="max-w-6xl mx-auto px-4 py-6">
@@ -44,10 +69,6 @@ const AdminDashboard = () => {
 
             {realError && (
                 <p className="p-3 rounded bg-red-100 text-red-700 text-sm">{getErrorMessage(error)}</p>
-            )}
-
-            {actionError && (
-                <p className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm">{actionError}</p>
             )}
 
             {isEmpty && <p className="text-gray-500">No events yet. Create your first event.</p>}

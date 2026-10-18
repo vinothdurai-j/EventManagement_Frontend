@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react'
 import { useLoginAdmin } from '../hooks/useAuth'
+import { useToast } from '../hooks/useToast'
 import { getErrorMessage } from '../utilis/format'
 import welcomeImg from '../images/welcome6.png'
 
@@ -29,10 +30,11 @@ const inputClasses =
     'placeholder:text-gray-400 transition focus:outline-none focus:border-[#5B67F8] focus:ring-2 focus:ring-[#5B67F8]/30'
 
 const AdminLogin = () => {
+    const toast = useToast()
     const [form, setForm] = useState({ email: '', password: '' })
     const [showPassword, setShowPassword] = useState(false)
 
-    const { mutate, isPending, isError, error } = useLoginAdmin()
+    const { mutate, isPending } = useLoginAdmin()
 
     const handleChange = (e) => {
         setForm({ ...form, [e.target.name]: e.target.value })
@@ -40,7 +42,10 @@ const AdminLogin = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        mutate(form)
+       mutate(form, {
+    onSuccess: (data) => toast.success(`Welcome back, ${data.user.name}!`),
+    onError: (err) => toast.error(getErrorMessage(err))
+})
     }
 
     return (
@@ -81,12 +86,6 @@ const AdminLogin = () => {
                         <p className="mt-1 text-center text-xs text-gray-500">Please Login to your account</p>
 
                         <div className="mt-6">
-                            {isError && (
-                                <p className="mb-4 break-words rounded-lg bg-red-50 p-3 text-sm text-red-700">
-                                    {getErrorMessage(error)}
-                                </p>
-                            )}
-
                             <label htmlFor="email" className="sr-only">
                                 Email
                             </label>

@@ -1,18 +1,36 @@
 import { Link } from 'react-router-dom'
 import { MapPin, CalendarDays } from 'lucide-react'
 import { useMyRegistrations, useCancelRegistration } from '../hooks/useRegistrations'
+import { useToast } from '../hooks/useToast'
 import { formatDate, getErrorMessage } from '../utilis/format'
-
+import { useConfirm } from '../hooks/useConfirm'
 const MyRegistrations = () => {
+    const toast = useToast()
     const { data: registrations, isPending, isError, error } = useMyRegistrations()
     const cancelMutation = useCancelRegistration()
+const confirm = useConfirm()
+
+    // const handleCancel = (id) => {
+    //     if (window.confirm('Are you sure you want to cancel this registration?')) {
+    //         cancelMutation.mutate(id, {
+    //             onSuccess: () => toast.success('Registration cancelled successfully'),
+    //             onError: (err) => toast.error(getErrorMessage(err))
+    //         })
+    //     }
+    // }
 
     const handleCancel = (id) => {
-        if (window.confirm('Are you sure you want to cancel this registration?')) {
-            cancelMutation.mutate(id)
-        }
-    }
-
+    confirm({
+        title: 'Cancel Registration',
+        message: 'Are you sure you want to cancel this registration?',
+        confirmText: 'Yes, Cancel',
+        onConfirm: () =>
+            cancelMutation.mutate(id, {
+                onSuccess: () => toast.success('Registration cancelled successfully'),
+                onError: (err) => toast.error(getErrorMessage(err))
+            })
+    })
+}
     return (
         <div className="min-h-screen bg-slate-50">
             <div className="max-w-4xl mx-auto px-4 py-8">
@@ -22,12 +40,6 @@ const MyRegistrations = () => {
 
                 {isError && (
                     <p className="p-3 rounded-lg bg-red-100 text-red-700 text-sm">{getErrorMessage(error)}</p>
-                )}
-
-                {cancelMutation.isError && (
-                    <p className="mb-4 p-3 rounded-lg bg-red-100 text-red-700 text-sm">
-                        {getErrorMessage(cancelMutation.error)}
-                    </p>
                 )}
 
                 {registrations && registrations.length === 0 && (

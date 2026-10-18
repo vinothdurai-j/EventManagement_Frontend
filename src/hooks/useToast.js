@@ -1,15 +1,19 @@
 import { useMemo } from 'react'
 import { useDispatch } from 'react-redux'
-import { addToast } from '../store/toastSlice'
+import { addToast, removeToast } from '../store/toastSlice'
 
 let toastId = 0
+const DURATION = 3000
 
 export const useToast = () => {
     const dispatch = useDispatch()
 
     return useMemo(() => {
-        const show = (type, message) =>
-            dispatch(addToast({ id: ++toastId, type, message }))
+        const show = (type, message) => {
+            const id = ++toastId
+            dispatch(addToast({ id, type, message }))
+            setTimeout(() => dispatch(removeToast(id)), DURATION)
+        }
 
         return {
             success: (message) => show('success', message),

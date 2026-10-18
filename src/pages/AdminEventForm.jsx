@@ -1,11 +1,13 @@
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import EventForm from '../components/EventForm'
 import { useEvent, useCreateEvent, useUpdateEvent } from '../hooks/useEvents'
+import { useToast } from '../hooks/useToast'
 import { getErrorMessage } from '../utilis/format'
 
 const AdminEventForm = () => {
     const { id } = useParams()
     const navigate = useNavigate()
+    const toast = useToast()
     const isEdit = !!id
 
     // edit mode-la mattum fetch (id illa na query disabled)
@@ -16,7 +18,13 @@ const AdminEventForm = () => {
     const mutation = isEdit ? updateMutation : createMutation
 
     const handleSubmit = (data) => {
-        const options = { onSuccess: () => navigate('/admin/dashboard') }
+        const options = {
+            onSuccess: () => {
+                toast.success(isEdit ? 'Event updated successfully' : 'Event created successfully')
+                navigate('/admin/dashboard')
+            },
+            onError: (err) => toast.error(getErrorMessage(err))
+        }
 
         if (isEdit) {
             updateMutation.mutate({ id, data }, options)
@@ -35,10 +43,6 @@ const AdminEventForm = () => {
 </Link>
             <div className="bg-white rounded-xl shadow p-6 mt-3">
                 <h1 className="text-2xl font-bold mb-4">{isEdit ? 'Edit Event' : 'Create Event'}</h1>
-
-                {mutation.isError && (
-                    <p className="mb-4 p-3 rounded bg-red-100 text-red-700 text-sm">{getErrorMessage(mutation.error)}</p>
-                )}
 
                 {isEdit && loadingEvent && <p className="text-gray-500">Loading...</p>}
 
