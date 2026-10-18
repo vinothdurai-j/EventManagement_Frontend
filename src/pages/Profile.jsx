@@ -25,13 +25,33 @@ const Profile = () => {
         <div className="max-w-md mx-auto px-4 py-6">
             <h1 className="text-2xl font-bold mb-4">My Profile</h1>
 
-            <div className="bg-white rounded-xl shadow divide-y">
-                {rows.map(([label, value]) => (
-                    <div key={label} className="flex justify-between px-5 py-3">
-                        <span className="text-gray-500">{label}</span>
-                        <span className="font-medium">{value}</span>
-                    </div>
-                ))}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                <div className="overflow-x-auto">
+                    <table className="w-full text-sm text-left">
+                        <thead className="bg-gray-50 border-b border-gray-200 text-gray-600">
+                            <tr>
+                                <th className="px-5 py-3.5 font-medium whitespace-nowrap">Field</th>
+                                <th className="px-5 py-3.5 font-medium whitespace-nowrap">Details</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-100">
+                            {rows.map(([label, value]) => (
+                                <tr key={label} className="hover:bg-gray-50 transition-colors">
+                                    <td className="px-5 py-4 text-gray-600 whitespace-nowrap">{label}</td>
+                                    <td className="px-5 py-4 font-medium text-gray-900">
+                                        {label === 'Role' ? (
+                                            <span className="inline-block text-xs font-medium px-2.5 py-1 rounded-full bg-blue-100 text-blue-700 capitalize">
+                                                {value}
+                                            </span>
+                                        ) : (
+                                            value || '-'
+                                        )}
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     )

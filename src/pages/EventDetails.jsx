@@ -1,5 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import { MapPin, CalendarDays, Users } from 'lucide-react'
 import { useEvent } from '../hooks/useEvents'
 import { useMyRegistrations, useRegisterForEvent } from '../hooks/useRegistrations'
 import { formatDate, getErrorMessage } from '../utilis/format'
@@ -15,21 +16,30 @@ const EventDetails = () => {
     const { data: myRegistrations } = useMyRegistrations(isUser)
     const registerMutation = useRegisterForEvent()
 
-    if (isPending) return <p className="max-w-3xl mx-auto px-4 py-6 text-gray-500">Loading event...</p>
+    if (isPending) {
+        return (
+            <div className="min-h-screen bg-slate-50">
+                <p className="max-w-3xl mx-auto px-4 py-8 text-slate-500">Loading event...</p>
+            </div>
+        )
+    }
 
     if (isError) {
         return (
-            <div className="max-w-3xl mx-auto px-4 py-6">
-                <p className="p-3 rounded bg-red-100 text-red-700 text-sm">{getErrorMessage(error)}</p>
-                <Link to={isUser ? '/events' : '/admin/dashboard'} className="text-blue-600 hover:underline text-sm">
-                    Back
-                </Link>
+            <div className="min-h-screen bg-slate-50">
+                <div className="max-w-3xl mx-auto px-4 py-8">
+                    <p className="p-3 rounded-lg bg-red-100 text-red-700 text-sm">{getErrorMessage(error)}</p>
+                    <Link to={isUser ? '/events' : '/admin/dashboard'} className="inline-block mt-3 text-indigo-600 hover:underline text-sm">
+                        Back
+                    </Link>
+                </div>
             </div>
         )
     }
 
     const seatsLeft = event.maxParticipants - event.registeredCount
     const isPast = new Date(event.eventDate) <= new Date()
+    const isActive = event.status === 'ACTIVE'
 
     const isRegistered = myRegistrations?.some(
         (r) => r.event?._id === event._id && r.status === 'REGISTERED'
@@ -46,63 +56,92 @@ const EventDetails = () => {
     }
 
     return (
-        <div className="max-w-3xl mx-auto px-4 py-6">
-            <Link to={isUser ? '/events' : '/admin/dashboard'} className="text-blue-600 hover:underline text-sm">
-                ← Back
-            </Link>
+        <div className="min-h-screen bg-slate-50">
+            <div className="max-w-3xl mx-auto px-4 py-8">
+                <Link
+                    to={isUser ? '/events' : '/admin/dashboard'}
+                    className="inline-flex items-center gap-2 rounded-lg border border-black bg-white px-4 py-2 text-sm font-medium text-slate-800 transition-colors duration-200 hover:border-indigo-500 hover:bg-indigo-500 hover:text-white"
+                >
+                    ← Back
+                </Link>
 
-            <div className="bg-white rounded-xl shadow p-6 mt-3">
-                <div className="flex items-center gap-2 mb-2">
-                    <span className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">{event.category}</span>
-                    <span className={`text-xs px-2 py-1 rounded ${event.status === 'ACTIVE' ? 'bg-green-100 text-green-700' : 'bg-gray-200 text-gray-700'}`}>
-                        {event.status}
-                    </span>
-                </div>
+                <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 sm:p-8 mt-4">
+                    {/* Category (left) + Status patch (right) */}
+                    <div className="flex items-center justify-between gap-2 mb-4">
+                        <span className="text-xs font-medium px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700">
+                            {event.category}
+                        </span>
 
-                <h1 className="text-2xl font-bold">{event.name}</h1>
-                <p className="text-gray-600 mt-2">{event.description}</p>
-
-                <div className="mt-4 space-y-1 text-gray-700">
-                    <p>📍 {event.location}</p>
-                    <p>📅 {formatDate(event.eventDate)}</p>
-                    <p>👥 {event.registeredCount} / {event.maxParticipants} registered</p>
-                    <p className={seatsLeft > 0 ? 'text-green-600' : 'text-red-600'}>
-                        {seatsLeft > 0 ? `${seatsLeft} seats left` : 'Event Full'}
-                    </p>
-                </div>
-
-                {registerMutation.isError && (
-                    <p className="mt-4 p-3 rounded bg-red-100 text-red-700 text-sm">
-                        {getErrorMessage(registerMutation.error)}
-                    </p>
-                )}
-
-                {registerMutation.isSuccess && (
-                    <p className="mt-4 p-3 rounded bg-green-100 text-green-700 text-sm">
-                        Registered successfully!
-                    </p>
-                )}
-
-                {isUser && (
-                    <button
-                        onClick={() => registerMutation.mutate(event._id)}
-                        disabled={!canRegister || registerMutation.isPending}
-                        className="mt-6 w-full py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-60 disabled:cursor-not-allowed"
-                    >
-                        {buttonLabel()}
-                    </button>
-                )}
-
-                {user?.role === 'admin' && (
-                    <div className="mt-6 flex gap-3">
-                        <Link to={`/admin/events/${event._id}/edit`} className="px-4 py-2 border rounded hover:bg-gray-100">
-                            Edit
-                        </Link>
-                        <Link to={`/admin/events/${event._id}/registrations`} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
-                            View Registrations
-                        </Link>
+                        <span
+                            className={`inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1 rounded-full ${
+                                isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                            }`}
+                        >
+                            <span className={`w-1.5 h-1.5 rounded-full ${isActive ? 'bg-green-500' : 'bg-red-500'}`} />
+                            {event.status}
+                        </span>
                     </div>
-                )}
+
+                    <h1 className="text-3xl font-bold text-slate-900">{event.name}</h1>
+                    <p className="text-slate-500 mt-2">{event.description}</p>
+
+                    <div className="mt-6 space-y-3 text-sm text-slate-600">
+                        <p className="flex items-center gap-2">
+                            <MapPin size={18} className="text-slate-400 shrink-0" />
+                            <span>{event.location}</span>
+                        </p>
+                        <p className="flex items-center gap-2">
+                            <CalendarDays size={18} className="text-slate-400 shrink-0" />
+                            <span>{formatDate(event.eventDate)}</span>
+                        </p>
+                        <p className="flex items-center gap-2">
+                            <Users size={18} className="text-slate-400 shrink-0" />
+                            <span>{event.registeredCount} / {event.maxParticipants} registered</span>
+                        </p>
+                        <p className={`font-medium ${seatsLeft > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                            {seatsLeft > 0 ? `${seatsLeft} seats left` : 'Event Full'}
+                        </p>
+                    </div>
+
+                    {registerMutation.isError && (
+                        <p className="mt-5 p-3 rounded-lg bg-red-100 text-red-700 text-sm">
+                            {getErrorMessage(registerMutation.error)}
+                        </p>
+                    )}
+
+                    {registerMutation.isSuccess && (
+                        <p className="mt-5 p-3 rounded-lg bg-green-100 text-green-700 text-sm">
+                            Registered successfully!
+                        </p>
+                    )}
+
+                    {isUser && (
+                        <button
+                            onClick={() => registerMutation.mutate(event._id)}
+                            disabled={!canRegister || registerMutation.isPending}
+                            className="mt-6 w-full py-2.5 text-sm font-medium bg-indigo-600 text-white rounded-xl shadow-sm hover:bg-indigo-700 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                        >
+                            {buttonLabel()}
+                        </button>
+                    )}
+
+                    {user?.role === 'admin' && (
+                        <div className="mt-6 flex gap-3">
+                            <Link
+                                to={`/admin/events/${event._id}/edit`}
+                                className="px-5 py-2.5 text-sm font-medium text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-100 transition-colors"
+                            >
+                                Edit
+                            </Link>
+                            <Link
+                                to={`/admin/events/${event._id}/registrations`}
+                                className="px-5 py-2.5 text-sm font-medium bg-indigo-600 text-white rounded-xl shadow-sm hover:bg-indigo-700 transition-colors"
+                            >
+                                View Registrations
+                            </Link>
+                        </div>
+                    )}
+                </div>
             </div>
         </div>
     )

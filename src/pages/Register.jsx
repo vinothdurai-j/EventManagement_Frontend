@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useRegisterUser } from '../hooks/useAuth'
 import { getErrorMessage } from '../utilis/format'
+import welcomeImg from '../images/welcome5.png'
+
 
 const Register = () => {
     const navigate = useNavigate()
@@ -48,7 +50,17 @@ const Register = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100 px-4">
-            <form onSubmit={handleSubmit} className="w-full max-w-md bg-white p-8 rounded-xl shadow">
+            <form onSubmit={handleSubmit} className="relative w-full max-w-md overflow-hidden bg-white rounded-xl shadow">
+    <img
+        src={welcomeImg}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full object-cover object-bottom"
+    />
+    <div className="absolute inset-0 bg-white/60" />
+
+    <div className="relative z-10 p-8">
+                
                 <h1 className="text-2xl font-bold text-center mb-6">Register</h1>
 
                 {errorMessage && (
@@ -81,6 +93,7 @@ const Register = () => {
                 <p className="mt-4 text-sm text-center">
                     Already have an account? <Link to="/login" className="text-blue-600 hover:underline">Login</Link>
                 </p>
+                </div>
             </form>
         </div>
     )
