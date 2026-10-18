@@ -2,23 +2,37 @@ import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
 import { useQueryClient } from '@tanstack/react-query'
 import { logout } from '../store/authSlice'
+import { useConfirm } from '../hooks/useConfirm'
+import { useToast } from '../hooks/useToast'
 import { UserCircle } from 'lucide-react'
 
 const Navbar = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const queryClient = useQueryClient()
+    const confirm = useConfirm()
+    const toast = useToast()
     const { token, user } = useSelector((state) => state.auth)
 
     // login pannala na navbar venam
     if (!token || !user) return null
 
-    const handleLogout = () => {
+    const doLogout = () => {
         const loginPath = user.role === 'admin' ? '/admin/login' : '/login'
 
         dispatch(logout())
         queryClient.clear() // munnaadhu user data next user-ku kaattaama irukka
         navigate(loginPath, { replace: true })
+        toast.success('Logged out successfully')
+    }
+
+    const handleLogout = () => {
+        confirm({
+            title: 'Logout',
+            message: 'Are you sure you want to logout?',
+            confirmText: 'Logout',
+            onConfirm: doLogout
+        })
     }
 
     const linkClass = ({ isActive }) =>
@@ -77,7 +91,7 @@ const Navbar = () => {
                     >
                         Logout
                     </button>
-                </div>
+          </div>
             </div>
         </nav>
     )
