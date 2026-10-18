@@ -16,6 +16,9 @@ import AdminDashboard from './pages/AdminDashboard'
 import AdminEventForm from './pages/AdminEventForm'
 import AdminRegistrations from './pages/AdminRegistrations'
 
+
+import ToastContainer from './components/ToastContainer'
+
 // Already login panna user login/register page-ku poga koodadhu
 const PublicRoute = ({ children }) => {
     const { token, user } = useSelector((state) => state.auth)
@@ -31,7 +34,7 @@ const App = () => {
     return (
         <>
             <Navbar />
-
+ <ToastContainer />
             <Routes>
                 {/* Public */}
                 <Route path="/login" element={<PublicRoute><Login /></PublicRoute>} />
